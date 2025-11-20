@@ -1,29 +1,27 @@
 #define SHL_IMPLEMENTATION
 #define SHL_STRIP_PREFIX
-#include "build.h"
+#include "libs/build.h"
 
-Cmd cmd = {0};
-
-int main()
-{
+int main() {
     auto_rebuild(__FILE__);
 
-    push(&cmd, "cc");
-    push(&cmd, "-O3");
-    push(&cmd, "-Wall");
-    push(&cmd, "-Wextra");
-    push(&cmd, "-I./raylib-5.5_macos/include");
-    push(&cmd, "-L./raylib-5.5_macos/lib");
-    push(&cmd, "-Wl,-rpath,@executable_path/raylib-5.5_macos/lib");
-    push(&cmd, "-o", "plasma", "plasma.c");
-    push(&cmd, "-lraylib");
-    push(&cmd, "-lm");
-    push(&cmd, "-framework", "OpenGL");
-    push(&cmd, "-framework", "Cocoa");
-    push(&cmd, "-framework", "IOKit");
-    push(&cmd, "-framework", "CoreVideo");
+    Cmd cmd_plasma = {0};
+    push(&cmd_plasma, "cc");
+    push(&cmd_plasma, "-O3");
+    push(&cmd_plasma, "-Wall");
+    push(&cmd_plasma, "-Wextra");
+    push(&cmd_plasma, "-I./libs/raylib-5.5_macos/include");
+    push(&cmd_plasma, "-L./libs/raylib-5.5_macos/lib");
+    push(&cmd_plasma, "-Wl,-rpath,@executable_path/libs/raylib-5.5_macos/lib");
+    push(&cmd_plasma, "-o", "plasma", "plasma.c");
+    push(&cmd_plasma, "-lraylib");
+    push(&cmd_plasma, "-lm");
+    push(&cmd_plasma, "-framework", "OpenGL");
+    push(&cmd_plasma, "-framework", "Cocoa");
+    push(&cmd_plasma, "-framework", "IOKit");
+    push(&cmd_plasma, "-framework", "CoreVideo");
 
-    if (!run_always(&cmd)) return 1;
+    if (!run_always(&cmd_plasma)) return 1;
 
     return 0;
 }
