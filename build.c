@@ -13,13 +13,9 @@ int main() {
     push(&cmd_plasma, "-I./libs/raylib-5.5_macos/include");
     push(&cmd_plasma, "-L./libs/raylib-5.5_macos/lib");
     push(&cmd_plasma, "-Wl,-rpath,@executable_path/libs/raylib-5.5_macos/lib");
-    push(&cmd_plasma, "-o", "plasma", "plasma.c");
     push(&cmd_plasma, "-lraylib");
     push(&cmd_plasma, "-lm");
-    push(&cmd_plasma, "-framework", "OpenGL");
-    push(&cmd_plasma, "-framework", "Cocoa");
-    push(&cmd_plasma, "-framework", "IOKit");
-    push(&cmd_plasma, "-framework", "CoreVideo");
+    push(&cmd_plasma, "-o", "plasma", "plasma.c");
 
     if (!run_always(&cmd_plasma)) return 1;
 
