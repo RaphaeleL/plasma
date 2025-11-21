@@ -1,6 +1,6 @@
 # Plasma
 
-A real-time [plasma](https://x.com/XorDev/status/1894123951401378051) effect visualization using raylib, converted from the [original PPM image sequence generator](https://gist.githubusercontent.com/rexim/ef86bf70918034a5a57881456c0a0ccf/raw/d82ffbc6ccacb6a1fc3167b7f38c526f5e478103/plasma.cpp) to use C, not C++.
+A real-time [plasma](https://x.com/XorDev/status/1894123951401378051) effect visualization using [raylib](https://github.com/raysan5/raylib), converted from the [original PPM image sequence generator](https://gist.githubusercontent.com/rexim/ef86bf70918034a5a57881456c0a0ccf/raw/d82ffbc6ccacb6a1fc3167b7f38c526f5e478103/plasma.cpp) to use C, not C++.
 
 ![Plasma Effect](assets/Image.png)
 
@@ -53,5 +53,5 @@ The animation loops through a 240-frame cycle, creating a seamless continuous ef
 ## Footnotes
 
 - This Plasma Effect was invented by [XorDev](https://x.com/XorDev/status/1894123951401378051)
-- The original C++ implementation that generated a PPM based Video was implemented by [github.com/rexim](https://gist.githubusercontent.com/rexim/ef86bf70918034a5a57881456c0a0ccf/raw/d82ffbc6ccacb6a1fc3167b7f38c526f5e478103/plasma.cpp)
-- This project is a **pure C conversion** of the original [C++ code](https://gist.githubusercontent.com/rexim/ef86bf70918034a5a57881456c0a0ccf/raw/d82ffbc6ccacb6a1fc3167b7f38c526f5e478103/plasma.cpp), maintaining the same visual effect while using only C language features.
+- The original C++ implementation that generated a PPM based Video was implemented by [Tsoding](https://gist.githubusercontent.com/rexim/ef86bf70918034a5a57881456c0a0ccf/raw/d82ffbc6ccacb6a1fc3167b7f38c526f5e478103/plasma.cpp)
+- This project is a **pure C conversion** of the original Versions, maintaining the same visual effect while using only C language features.
