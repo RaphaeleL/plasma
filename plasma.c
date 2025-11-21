@@ -1,130 +1,6 @@
 #include "raylib.h"
 #include <math.h>
 
-typedef struct {
-    float x, y, z, w;
-} vec4;
-
-typedef struct {
-    float x, y;
-} vec2;
-
-// vec2 operations
-vec2 vec2_mul_scalar(vec2 a, float s) {
-    vec2 result = {a.x * s, a.y * s};
-    return result;
-}
-
-vec2 vec2_add_scalar(vec2 a, float s) {
-    vec2 result = {a.x + s, a.y + s};
-    return result;
-}
-
-vec2 vec2_sub(vec2 a, vec2 b) {
-    vec2 result = {a.x - b.x, a.y - b.y};
-    return result;
-}
-
-vec2 vec2_add(vec2 a, vec2 b) {
-    vec2 result = {a.x + b.x, a.y + b.y};
-    return result;
-}
-
-vec2 vec2_mul(vec2 a, vec2 b) {
-    vec2 result = {a.x * b.x, a.y * b.y};
-    return result;
-}
-
-vec2 vec2_div_scalar(vec2 a, float s) {
-    vec2 result = {a.x / s, a.y / s};
-    return result;
-}
-
-float vec2_dot(vec2 a, vec2 b) {
-    return a.x * b.x + a.y * b.y;
-}
-
-vec2 vec2_abs(vec2 a) {
-    vec2 result = {fabsf(a.x), fabsf(a.y)};
-    return result;
-}
-
-vec2 vec2_add_assign(vec2 *a, vec2 b) {
-    *a = vec2_add(*a, b);
-    return *a;
-}
-
-vec2 vec2_add_scalar_assign(vec2 *a, float s) {
-    *a = vec2_add_scalar(*a, s);
-    return *a;
-}
-
-vec2 vec2_cos(vec2 a) {
-    vec2 result = {cosf(a.x), cosf(a.y)};
-    return result;
-}
-
-vec2 vec2_yx(vec2 a) {
-    vec2 result = {a.y, a.x};
-    return result;
-}
-
-vec4 vec2_xyyx(vec2 a) {
-    vec4 result = {a.x, a.y, a.y, a.x};
-    return result;
-}
-
-// vec4 operations
-vec4 vec4_add_scalar(vec4 a, float s) {
-    vec4 result = {a.x + s, a.y + s, a.z + s, a.w + s};
-    return result;
-}
-
-vec4 vec4_mul_scalar(vec4 a, float s) {
-    vec4 result = {a.x * s, a.y * s, a.z * s, a.w * s};
-    return result;
-}
-
-vec4 vec4_add(vec4 a, vec4 b) {
-    vec4 result = {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
-    return result;
-}
-
-vec4 vec4_sub(vec4 a, vec4 b) {
-    vec4 result = {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
-    return result;
-}
-
-vec4 vec4_add_assign(vec4 *a, vec4 b) {
-    *a = vec4_add(*a, b);
-    return *a;
-}
-
-vec4 vec4_sub_from_scalar(float s, vec4 a) {
-    vec4 result = {s - a.x, s - a.y, s - a.z, s - a.w};
-    return result;
-}
-
-vec4 vec4_div(vec4 a, vec4 b) {
-    vec4 result = {a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w};
-    return result;
-}
-
-vec4 vec4_sin(vec4 a) {
-    vec4 result = {sinf(a.x), sinf(a.y), sinf(a.z), sinf(a.w)};
-    return result;
-}
-
-vec4 vec4_exp(vec4 a) {
-    vec4 result = {expf(a.x), expf(a.y), expf(a.z), expf(a.w)};
-    return result;
-}
-
-vec4 vec4_tanh(vec4 a) {
-    vec4 result = {tanhf(a.x), tanhf(a.y), tanhf(a.z), tanhf(a.w)};
-    return result;
-}
-
 int main()
 {
     int w = 16*60;
@@ -142,69 +18,107 @@ int main()
 
     float frameCount = 0.0f;
     const float totalFrames = 240.0f;
+    const float inv_totalFrames = 1.0f / totalFrames;
+    const float two_pi = 2.0f * M_PI;
+
+    unsigned char *pixels = (unsigned char *)img.data;
 
     while (!WindowShouldClose()) {
         // Calculate time based (looping animation)
-        float t = (fmodf(frameCount, totalFrames) / totalFrames) * 2.0f * M_PI;
+        float t = fmodf(frameCount, totalFrames) * inv_totalFrames * two_pi;
 
-        // Calculate plasma effect for each pixel
-        vec2 r = {(float)w, (float)h};
-        unsigned char *pixels = (unsigned char *)img.data;
+        // Precompute constants outside loops
+        float r_x = (float)w;
+        float r_y = (float)h;
+        float inv_r_y = 1.0f / r_y;
 
+        // Calculate plasma effect for each pixel - optimized inner loop
         for (int y = 0; y < h; ++y) {
+            float fy = (float)y;
+            float py_base = (fy * 2.0f - r_y) * inv_r_y;
+            
             for (int x = 0; x < w; ++x) {
-                vec4 o = {0, 0, 0, 0};
-                vec2 FC = {(float)x, (float)y};
-
-                vec2 p = vec2_div_scalar(vec2_sub(vec2_mul_scalar(FC, 2.0f), r), r.y);
-                vec2 l = {0, 0};
-                vec2 i = {0, 0};
-
+                float fx = (float)x;
+                
+                // p = (FC * 2.0 - r) / r.y
+                float px = (fx * 2.0f - r_x) * inv_r_y;
+                float py = py_base;
+                
                 // l += 4.0 - 4.0 * abs(0.7 - dot(p, p))
-                float dot_pp = vec2_dot(p, p);
-                float scalar_val = 4.0f - 4.0f * fabsf(0.7f - dot_pp);
-                l.x += scalar_val;
-                l.y += scalar_val;
-                vec2 v = vec2_mul(p, l);
-
-                for (; i.y++ < 8.0f;) {
-                    // v += cos(v.yx() * i.y + i + t) / i.y + 0.7
-                    vec2 v_yx = vec2_yx(v);
-                    vec2 v_scaled = vec2_mul_scalar(v_yx, i.y);
-                    vec2 v_add_i = vec2_add(v_scaled, i);
-                    vec2 v_add_t = vec2_add_scalar(v_add_i, t);
-                    vec2 cos_result = vec2_cos(v_add_t);
-                    vec2 cos_div = vec2_div_scalar(cos_result, i.y);
-                    vec2 cos_add = vec2_add_scalar(cos_div, 0.7f);
-                    vec2_add_assign(&v, cos_add);
-
+                float dot_pp = px * px + py * py;
+                float l_val = 4.0f - 4.0f * fabsf(0.7f - dot_pp);
+                
+                // v = p * l
+                float vx = px * l_val;
+                float vy = py * l_val;
+                
+                // Initialize output
+                float ox = 0.0f, oy = 0.0f, oz = 0.0f, ow = 0.0f;
+                
+                // Inner loop - matches original: i.y goes from 1 to 8 (8 iterations), i.x stays 0
+                // Original: for (; i.y++ < 8.0f;) - post-increment means i.y is 1-8 inside loop
+                // Original: v += cos(v.yx() * i.y + i + t) / i.y + 0.7
+                // Where i = {0, i.y}, so: cos((vy * i.y + 0, vx * i.y + i.y) + t)
+                for (int i = 1; i <= 8; ++i) {
+                    float fi = (float)i;
+                    float inv_i = 1.0f / fi;
+                    
+                    // v.yx() swaps components: (vy, vx)
+                    // v.yx() * i.y = (vy * i.y, vx * i.y)
+                    // + i = (vy * i.y + 0, vx * i.y + i.y)
+                    // + t = (vy * i.y + t, vx * i.y + i.y + t)
+                    float cos_arg_x = vy * fi + t;
+                    float cos_arg_y = vx * fi + fi + t;
+                    float cos_x = cosf(cos_arg_x);
+                    float cos_y = cosf(cos_arg_y);
+                    vx += cos_x * inv_i + 0.7f;
+                    vy += cos_y * inv_i + 0.7f;
+                    
                     // o += (sin(v.xyyx()) + 1.0) * abs(v.x - v.y)
-                    vec4 v_xyyx = vec2_xyyx(v);
-                    vec4 sin_result = vec4_sin(v_xyyx);
-                    vec4 sin_add = vec4_add_scalar(sin_result, 1.0f);
-                    vec4 sin_mul = vec4_mul_scalar(sin_add, fabsf(v.x - v.y));
-                    vec4_add_assign(&o, sin_mul);
+                    // v.xyyx() = (vx, vy, vy, vx), so compute sin once per component
+                    float v_diff = fabsf(vx - vy);
+                    float sin_vx = sinf(vx);  // Compute once, reuse for x and w components
+                    float sin_vy = sinf(vy);  // Compute once, reuse for y and z components
+                    
+                    ox += (sin_vx + 1.0f) * v_diff;
+                    oy += (sin_vy + 1.0f) * v_diff;
+                    oz += (sin_vy + 1.0f) * v_diff;
+                    ow += (sin_vx + 1.0f) * v_diff;
                 }
-
+                
                 // o = tanh(5.0 * exp(l.x - 4.0 - p.y * vec4(-1, 1, 2, 0)) / o)
-                vec4 p_y_vec = {p.y * -1.0f, p.y * 1.0f, p.y * 2.0f, p.y * 0.0f};
-                vec4 exp_arg = {l.x - 4.0f, l.x - 4.0f, l.x - 4.0f, l.x - 4.0f};
-                exp_arg = vec4_sub(exp_arg, p_y_vec);
-                vec4 exp_result = vec4_exp(exp_arg);
-                vec4 exp_mul = vec4_mul_scalar(exp_result, 5.0f);
-                vec4 exp_div = vec4_div(exp_mul, o);
-                o = vec4_tanh(exp_div);
-
+                float exp_base = l_val - 4.0f;
+                float exp_x = expf(exp_base + py);
+                float exp_y = expf(exp_base - py);
+                float exp_z = expf(exp_base - py * 2.0f);
+                float exp_w = expf(exp_base);
+                
+                // Avoid division by zero
+                float inv_ox = (ox != 0.0f) ? 1.0f / ox : 1.0f;
+                float inv_oy = (oy != 0.0f) ? 1.0f / oy : 1.0f;
+                float inv_oz = (oz != 0.0f) ? 1.0f / oz : 1.0f;
+                float inv_ow = (ow != 0.0f) ? 1.0f / ow : 1.0f;
+                
+                ox = tanhf(5.0f * exp_x * inv_ox);
+                oy = tanhf(5.0f * exp_y * inv_oy);
+                oz = tanhf(5.0f * exp_z * inv_oz);
+                ow = tanhf(5.0f * exp_w * inv_ow);
+                
+                // Clamp and convert to byte - optimized clamping
                 int idx = (y * w + x) * 4;
-                pixels[idx + 0] = (unsigned char)(o.x * 255); // R
-                pixels[idx + 1] = (unsigned char)(o.y * 255); // G
-                pixels[idx + 2] = (unsigned char)(o.z * 255); // B
+                // Fast clamp: if val < 0 use 0, else if val > 1 use 1, else use val
+                float r_val = (ox < 0.0f) ? 0.0f : ((ox > 1.0f) ? 1.0f : ox);
+                float g_val = (oy < 0.0f) ? 0.0f : ((oy > 1.0f) ? 1.0f : oy);
+                float b_val = (oz < 0.0f) ? 0.0f : ((oz > 1.0f) ? 1.0f : oz);
+                pixels[idx + 0] = (unsigned char)(r_val * 255.0f); // R
+                pixels[idx + 1] = (unsigned char)(g_val * 255.0f); // G
+                pixels[idx + 2] = (unsigned char)(b_val * 255.0f); // B
                 pixels[idx + 3] = 255; // A
             }
         }
 
         // Update texture with new pixel data
-        UpdateTexture(texture, img.data);
+        UpdateTexture(texture, pixels);
 
         // Draw
         BeginDrawing();
