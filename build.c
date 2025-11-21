@@ -8,6 +8,9 @@ int main() {
     Cmd cmd_plasma = {0};
     push(&cmd_plasma, "cc");
     push(&cmd_plasma, "-O3");
+    push(&cmd_plasma, "-march=native");  // Use CPU-specific optimizations
+    push(&cmd_plasma, "-ffast-math");     // Fast math optimizations (may slightly affect precision)
+    push(&cmd_plasma, "-funroll-loops"); // Unroll loops for better performance
     push(&cmd_plasma, "-Wall");
     push(&cmd_plasma, "-Wextra");
     push(&cmd_plasma, "-I./libs/raylib-5.5_macos/include");
